@@ -1,4 +1,4 @@
-# 馃搫 Requerimientos del Sistema
+# 📄Requerimientos del Sistema
 
 ## 1. Lista general de requerimientos
 
