@@ -13,11 +13,9 @@ El sistema de Reporting (OficioYa) debe tener los siguientes requerimientos:
 
 ### 1.2 Requerimientos no funcionales
 
-1. Todos los endpoints deben validar el token JWT.
-2. Cobertura de pruebas unitarias mínima del 80%.
-3. La interfaz de reportes, indicadores y estadísticas debe ser responsive.
-4. El sistema debe registrar logs de cada generación y exportación de reporte.
-5. La generación de reportes no debe tardar más de 5 segundos. (borrador, validar con PO)
+1. Cobertura de pruebas unitarias mínima del 80%.
+2. La interfaz de reportes, indicadores y estadísticas debe ser responsive.
+3. El sistema debe registrar logs de cada generación y exportación de reporte.
 
 ## 2. Diagramas de caso de uso
 
