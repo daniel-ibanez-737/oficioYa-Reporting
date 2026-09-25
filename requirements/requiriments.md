@@ -1,4 +1,4 @@
-# 📄 Requerimientos del Sistema
+# 馃搫 Requerimientos del Sistema
 
 ## 1. Lista general de requerimientos
 
@@ -6,18 +6,18 @@ El sistema de Reporting (OficioYa) debe tener los siguientes requerimientos:
 
 ### 1.1 Requerimientos funcionales
 
-1. Permitir al trabajador consultar su historial de trabajos completados y ganancias referenciales del mes.
-2. Permitir al contratante consultar su historial de contrataciones y recontactar a un trabajador con un clic.
-3. Generar un reporte administrativo de las búsquedas más frecuentes por oficio y zona.
-4. Permitir al trabajador con suscripción Pro consultar estadísticas avanzadas de demanda de sus servicios.
+1. Permitir al administrador visualizar reportes de información de la plataforma.
+2. Permitir al administrador consultar indicadores de desempeño de la plataforma.
+3. Permitir al administrador consultar estadísticas de la plataforma.
+4. Permitir al administrador exportar los reportes generados por la plataforma.
 
 ### 1.2 Requerimientos no funcionales
 
 1. Todos los endpoints deben validar el token JWT.
 2. Cobertura de pruebas unitarias mínima del 80%.
-3. La interfaz de historial y estadísticas debe ser responsive.
-4. El sistema debe registrar logs de cada generación de reporte.
-5. La generación de reportes históricos no debe tardar más de 5 segundos para periodos de hasta 1 año. (borrador, validar con PO)
+3. La interfaz de reportes, indicadores y estadísticas debe ser responsive.
+4. El sistema debe registrar logs de cada generación y exportación de reporte.
+5. La generación de reportes no debe tardar más de 5 segundos. (borrador, validar con PO)
 
 ## 2. Diagramas de caso de uso
 
@@ -26,45 +26,45 @@ El sistema de Reporting (OficioYa) debe tener los siguientes requerimientos:
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-01 |
-| **Nombre del requerimiento** | Historial de trabajos completados |
-| **Descripción** | *El sistema debe permitir al trabajador consultar cuántos trabajos ha completado y sus ganancias referenciales del mes* |
-| **Precondiciones** | *El trabajador debe estar autenticado* |
-| **Actor** | *Trabajador* |
-| **Flujo principal** | 1. El trabajador accede a su historial.<br>2. El sistema agrega los trabajos cumplidos.<br>3. El sistema calcula las ganancias referenciales del periodo. |
-| **Poscondiciones** | *El trabajador visualiza su historial y ganancias referenciales.* |
+| **Nombre del requerimiento** | Visualización de reportes de la plataforma |
+| **Descripción** | *El sistema debe permitir al administrador visualizar reportes con información disponible de la plataforma* |
+| **Precondiciones** | *El administrador debe estar autenticado y autorizado para acceder al módulo de Reporting* |
+| **Actor** | *Administrador* |
+| **Flujo principal** | 1. El administrador accede al módulo de Reporting.<br>2. Selecciona la opción de reportes.<br>3. El sistema obtiene la información requerida desde los dominios correspondientes.<br>4. El sistema genera y presenta el reporte solicitado. |
+| **Poscondiciones** | *El administrador visualiza el reporte generado con la información disponible de la plataforma.* |
 
 ### 2.2 Requerimiento Funcional 2
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-02 |
-| **Nombre del requerimiento** | Historial de contrataciones |
-| **Descripción** | *El sistema debe permitir al contratante ver su historial de servicios contratados y recontactar a un trabajador con un clic* |
-| **Precondiciones** | *El contratante debe estar autenticado* |
-| **Actor** | *Contratante* |
-| **Flujo principal** | 1. El contratante accede a su historial.<br>2. El sistema lista los servicios previos.<br>3. El contratante selecciona "recontactar". |
-| **Poscondiciones** | *El contratante puede iniciar una nueva solicitud al mismo trabajador.* |
+| **Nombre del requerimiento** | Consulta de indicadores de desempeño |
+| **Descripción** | *El sistema debe permitir al administrador consultar indicadores de desempeño de la plataforma* |
+| **Precondiciones** | *El administrador debe estar autenticado y debe existir información disponible para calcular los indicadores* |
+| **Actor** | *Administrador* |
+| **Flujo principal** | 1. El administrador accede al módulo de Reporting.<br>2. Selecciona la opción de indicadores.<br>3. El sistema obtiene la información necesaria desde los dominios correspondientes.<br>4. El sistema calcula y presenta los indicadores disponibles. |
+| **Poscondiciones** | *El administrador visualiza los indicadores de desempeño disponibles de la plataforma.* |
 
 ### 2.3 Requerimiento Funcional 3
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-03 |
-| **Nombre del requerimiento** | Reporte de búsquedas más frecuentes |
-| **Descripción** | *El sistema debe generar un reporte administrativo de las búsquedas más frecuentes por oficio y zona* |
-| **Precondiciones** | *El administrador debe estar autenticado. Debe existir historial de búsquedas* |
+| **Nombre del requerimiento** | Consulta de estadísticas de la plataforma |
+| **Descripción** | *El sistema debe permitir al administrador consultar estadísticas generadas a partir de la información disponible de la plataforma* |
+| **Precondiciones** | *El administrador debe estar autenticado y debe existir información disponible para generar las estadísticas* |
 | **Actor** | *Administrador* |
-| **Flujo principal** | 1. El administrador solicita el reporte.<br>2. El sistema agrega las búsquedas históricas.<br>3. El sistema retorna el reporte consolidado. |
-| **Poscondiciones** | *El administrador visualiza el reporte de tendencias de búsqueda.* |
+| **Flujo principal** | 1. El administrador accede al módulo de Reporting.<br>2. Selecciona la opción de estadísticas.<br>3. El sistema obtiene la información requerida desde los dominios correspondientes.<br>4. El sistema procesa la información y presenta las estadísticas disponibles. |
+| **Poscondiciones** | *El administrador visualiza las estadísticas generadas por el sistema.* |
 
 ### 2.4 Requerimiento Funcional 4
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-04 |
-| **Nombre del requerimiento** | Estadísticas avanzadas de demanda |
-| **Descripción** | *El sistema debe permitir a un trabajador con suscripción Pro consultar estadísticas avanzadas de demanda de sus servicios* |
-| **Precondiciones** | *El trabajador debe tener suscripción Pro activa* |
-| **Actor** | *Trabajador (Pro)* |
-| **Flujo principal** | 1. El trabajador Pro accede a estadísticas avanzadas.<br>2. El sistema calcula métricas de demanda (búsquedas que lo incluyeron, tendencia). |
-| **Poscondiciones** | *El trabajador visualiza sus estadísticas avanzadas de demanda.* |
+| **Nombre del requerimiento** | Exportación de reportes |
+| **Descripción** | *El sistema debe permitir al administrador exportar los reportes generados por la plataforma* |
+| **Precondiciones** | *El administrador debe estar autenticado y debe existir un reporte generado disponible para exportación* |
+| **Actor** | *Administrador* |
+| **Flujo principal** | 1. El administrador genera o visualiza un reporte.<br>2. Selecciona la opción de exportar.<br>3. El sistema prepara el reporte para su exportación.<br>4. El sistema entrega el archivo generado al administrador. |
+| **Poscondiciones** | *El reporte queda disponible para que el administrador lo conserve o utilice fuera de la plataforma.* |
