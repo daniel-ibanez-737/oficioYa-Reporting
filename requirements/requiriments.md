@@ -6,16 +6,24 @@ El sistema de Reporting (OficioYa) debe tener los siguientes requerimientos:
 
 ### 1.1 Requerimientos funcionales
 
-1. Permitir al administrador visualizar reportes de información de la plataforma.
-2. Permitir al administrador consultar indicadores de desempeño de la plataforma.
-3. Permitir al administrador consultar estadísticas de la plataforma.
-4. Permitir al administrador exportar los reportes generados por la plataforma.
+1. El sistema deberá permitir al administrador consultar los reportes disponibles en OficioYa.
+2. El sistema deberá permitir al administrador consultar indicadores construidos a partir de la información de la plataforma.
+3. El sistema deberá permitir al administrador consultar estadísticas agregadas de la actividad de OficioYa.
+4. El sistema deberá permitir aplicar criterios de consulta sobre los reportes disponibles.
+5. Reporting deberá permitir generar información relacionada con solicitudes y servicios registrados.
+6. Reporting deberá permitir generar estadísticas e indicadores relacionados con calificaciones y reputación.
+7. Reporting deberá permitir generar información agregada relacionada con oficios, trabajadores y actividad de la plataforma.
+8. El sistema deberá permitir al administrador exportar la información correspondiente al reporte consultado.
 
 ### 1.2 Requerimientos no funcionales
 
 1. Cobertura de pruebas unitarias mínima del 80%.
 2. La interfaz de reportes, indicadores y estadísticas debe ser responsive.
 3. El sistema debe registrar logs de cada generación y exportación de reporte.
+4. El acceso a los reportes, indicadores y estadísticas deberá estar restringido a usuarios autorizados.
+5. Los reportes deberán proteger la información privada que no sea necesaria para su propósito.
+6. La información mostrada y la información exportada deberán mantener consistencia entre sí.
+7. La generación y exportación de reportes deberá quedar registrada mediante el mecanismo de logging del sistema.
 
 ## 2. Diagramas de caso de uso
 
