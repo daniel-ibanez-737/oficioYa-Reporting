@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: oficioya-reporting
+
+server:
+  port: 8083
+
+oficioya:
+  security:
+    # Secreto compartido con Identity (Squad 1). En producción se define con la variable JWT_SECRET.
+    jwt-secret: ${JWT_SECRET:cambiar-este-secreto-de-desarrollo-de-al-menos-32-bytes}
+    roles-claim: ${JWT_ROLES_CLAIM:roles}
+  orquestador:
+    # Toda comunicación con otros dominios o con la IA sale por el Orchestrator.
+    base-url: ${ORQUESTADOR_URL:http://localhost:8080}
+    # SUPUESTO: rutas del Orchestrator hacia cada dominio, pendientes de confirmar con Squad 1.
+    rutas:
+      estadisticas-servicios: /api/service/solicitudes/estadisticas
+      estadisticas-trabajadores: /api/workers/trabajadores/estadisticas
+      estadisticas-reputacion: /api/reputation/estadisticas
+  reporting:
+    # Periodo por defecto cuando el administrador no envía fechas (vista semanal del mockup).
+    dias-periodo-por-defecto: 7
+
+# Documentación de la API (Swagger UI en /swagger-ui.html). Se puede apagar con SWAGGER_ENABLED=false.
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:true}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:true}
+    operations-sorter: method
+    tags-sorter: alpha
+
+logging:
+  level:
+    edu.eci.dosw.oficioya: INFO

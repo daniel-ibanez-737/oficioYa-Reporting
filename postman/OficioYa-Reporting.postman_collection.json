@@ -1,0 +1,435 @@
+{
+  "info": {
+    "name": "OficioYa · Reporting (Squad 5)",
+    "description": "Casos de aceptación del sprint 3 de Reporting (Squad 5).\n\nCómo usarla:\n1. Levantar el servicio: `./mvnw spring-boot:run -Dspring-boot.run.profiles=demo` (perfil `demo`: cifras simuladas, sin depender de otros servicios).\n2. Ejecutar la colección completa (Run collection). Los JWT de cada rol se generan solos en el pre-request con el secreto de desarrollo (`jwtSecret`).\n3. Para apuntar a otro entorno, cambiar `reportingUrl` y `jwtSecret`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Genera JWT HS256 de desarrollo para cada rol (mismo secreto que application.yml).",
+          "// Así no hay que pegar tokens a mano. En producción los emite Identity (Squad 1).",
+          "const cripto = require('crypto-js');",
+          "function b64url(palabras) {",
+          "    return cripto.enc.Base64.stringify(palabras).replace(/=+$/, '').replace(/\\+/g, '-').replace(/\\//g, '_');",
+          "}",
+          "function token(sub, rol) {",
+          "    const ahora = Math.floor(Date.now() / 1000);",
+          "    const cabecera = b64url(cripto.enc.Utf8.parse(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));",
+          "    const cuerpo = b64url(cripto.enc.Utf8.parse(JSON.stringify({ sub: String(sub), roles: [rol], iat: ahora, exp: ahora + 3600 })));",
+          "    const firma = b64url(cripto.HmacSHA256(cabecera + '.' + cuerpo, pm.collectionVariables.get('jwtSecret')));",
+          "    return cabecera + '.' + cuerpo + '.' + firma;",
+          "}",
+          "pm.collectionVariables.set('token_contratante', token(pm.collectionVariables.get('contratanteId'), 'ROLE_CONTRATANTE'));",
+          "pm.collectionVariables.set('token_trabajador', token(pm.collectionVariables.get('trabajadorId'), 'ROLE_TRABAJADOR'));",
+          "pm.collectionVariables.set('token_admin', token(1, 'ROLE_ADMINISTRADOR'));",
+          "pm.collectionVariables.set('token_sistema', token(0, 'ROLE_SISTEMA'));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "reportingUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "jwtSecret",
+      "value": "cambiar-este-secreto-de-desarrollo-de-al-menos-32-bytes"
+    },
+    {
+      "key": "trabajadorId",
+      "value": "101"
+    },
+    {
+      "key": "contratanteId",
+      "value": "201"
+    }
+  ],
+  "item": [
+    {
+      "name": "Reporting",
+      "item": [
+        {
+          "name": "RF-01 · Catálogo de reportes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/reportes",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "reportes"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cuatro reportes', () => pm.expect(pm.response.json().length).to.eql(4));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RF-01/04 · Reporte de servicios de una semana",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/reportes/SERVICIOS?desde=2026-10-04&hasta=2026-10-10",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "reportes",
+                "SERVICIOS"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-10-04"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-10-10"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Compara con la semana anterior', () => pm.expect(b.desdeComparacion).to.eql('2026-09-27'));",
+                  "pm.collectionVariables.set('serviciosCumplidos', b.indicadores[0].valor);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RF-02 · Indicadores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/indicadores?desde=2026-10-04&hasta=2026-10-10",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "indicadores"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-10-04"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-10-10"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Seis indicadores', () => pm.expect(pm.response.json().length).to.eql(6));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RF-03 · Estadísticas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/estadisticas?desde=2026-10-04&hasta=2026-10-10",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "estadisticas"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-10-04"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-10-10"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cinco estadísticas', () => pm.expect(pm.response.json().length).to.eql(5));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RF-08 · Exportar CSV (mismos datos que la consulta)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/reportes/SERVICIOS/exportacion?desde=2026-10-04&hasta=2026-10-10&formato=CSV",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "reportes",
+                "SERVICIOS",
+                "exportacion"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-10-04"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-10-10"
+                },
+                {
+                  "key": "formato",
+                  "value": "CSV"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es un CSV descargable', () => { pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv'); pm.expect(pm.response.headers.get('Content-Disposition')).to.include('attachment'); });",
+                  "pm.test('Coincide con lo consultado', () => pm.expect(pm.response.text()).to.include('Total de servicios cumplidos;' + pm.collectionVariables.get('serviciosCumplidos') + ';'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RF-04 · Periodo incoherente → 400",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/reportes/GENERAL?desde=2026-10-10&hasta=2026-10-01",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "reportes",
+                "GENERAL"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-10-10"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-10-01"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Seguridad · Contratante → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_contratante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/reportes",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "reportes"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Seguridad · Sin JWT → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reportingUrl}}/api/reporting/reportes",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "api",
+                "reporting",
+                "reportes"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Documentación (Swagger)",
+      "item": [
+        {
+          "name": "Swagger · Reporting",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reportingUrl}}/v3/api-docs",
+              "host": [
+                "{{reportingUrl}}"
+              ],
+              "path": [
+                "v3",
+                "api-docs"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Documenta el JWT', () => pm.expect(pm.response.json().components.securitySchemes).to.have.property('bearer-jwt'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

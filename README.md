@@ -1,2 +1,97 @@
-# oficioYa-Reporting
-Repositorio de la rama reporting del proyecto OficioYa
+# oficioya-reporting
+
+Microservicio del dominio **Reporting** de OficioYa (Squad 5).
+
+Reportes, indicadores y estadísticas para el administrador, con exportación. Consulta otros dominios a través del Orchestrator.
+
+## Tecnología
+- Java 21, Spring Boot 4.1.1, Maven
+- Spring Security con JWT (validado también por el Orchestrator)
+- JUnit 5 y JaCoCo (cobertura mínima del 80 %)
+
+## Estructura por capas (`edu.eci.dosw.oficioya.reporting`)
+| Paquete | Capa |
+|---|---|
+| `controller` | Presentación (API REST) |
+| `service` | Aplicación (casos de uso) |
+| `domain` | Dominio (modelo y reglas de negocio) |
+| `dto` | Objetos de transferencia |
+| `client` | Infraestructura: `OrquestadorClient`, única salida hacia otros dominios o la IA |
+| `config` | Configuración (seguridad, clientes HTTP) |
+| `exception` | Excepciones y manejo de errores |
+
+Toda comunicación con otros dominios o con la IA **entra y sale por el Orchestrator**.
+
+## Compilar y probar
+Con Java 21 instalado (no hace falta Maven: el proyecto trae Maven Wrapper):
+
+```bash
+./mvnw verify          # Linux, macOS o Git Bash
+mvnw.cmd verify        # Windows (CMD o PowerShell)
+```
+
+Sin Java, con Docker:
+
+```bash
+docker run --rm -v "$PWD":/app -w /app maven:3.9-eclipse-temurin-21 mvn verify
+```
+
+`mvn verify` compila, ejecuta las pruebas y valida la cobertura mínima con JaCoCo
+(reporte en `target/site/jacoco/index.html`).
+
+## Variables de entorno
+| Variable | Uso | Valor por defecto (desarrollo) |
+|---|---|---|
+| `JWT_SECRET` | Secreto para validar el JWT | valor de desarrollo |
+| `JWT_ROLES_CLAIM` | Claim del JWT con los roles | `roles` |
+| `ORQUESTADOR_URL` | URL del Orchestrator | `http://localhost:8080` |
+
+## Endpoints (solo `ROLE_ADMINISTRADOR`)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/reporting/reportes` | Catálogo de reportes disponibles. |
+| GET | `/api/reporting/reportes/{tipo}?desde&hasta` | Genera el reporte: `SERVICIOS`, `RESENAS`, `TRABAJADORES` o `GENERAL`. |
+| GET | `/api/reporting/reportes/{tipo}/exportacion?desde&hasta&formato=CSV` | Descarga el mismo reporte como archivo. |
+| GET | `/api/reporting/indicadores?desde&hasta` | Los 6 indicadores, comparados con el periodo anterior. |
+| GET | `/api/reporting/estadisticas?desde&hasta` | Las 5 estadísticas agregadas. |
+
+- Fechas en formato `yyyy-MM-dd`. Sin fechas se usan los últimos 7 días. El periodo máximo es de 366 días.
+- Errores: `400` criterio inválido, `401` sin JWT, `403` sin rol de administrador, `502` si otro dominio no responde.
+
+**Indicadores:** servicios cumplidos, trabajadores pausados (voluntarios y por revisión), reseñas reportadas
+(pendientes y resueltas), tasa de cancelación, trabajadores activos y calificación promedio.
+
+**Estadísticas:** servicios cumplidos por día y por oficio, solicitudes por estado, trabajadores activos por oficio
+y reportes de reseñas por estado.
+
+## De dónde salen los datos
+Reporting no guarda nada: en cada consulta pide datos **agregados** (conteos y promedios, nunca datos personales)
+a través del Orchestrator.
+
+| Dominio | Ruta (configurable en `oficioya.orquestador.rutas`) |
+|---|---|
+| Service | `/api/service/solicitudes/estadisticas` |
+| Worker | `/api/workers/trabajadores/estadisticas` |
+| Reputation | `/api/reputation/estadisticas` (ya implementado por el Squad 5) |
+
+## Perfil `demo`
+Para probar sin los otros dominios, con cifras parecidas a las del mockup:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+## Supuestos pendientes de confirmar
+- Formato de las estadísticas de Service (Squad 3) y Worker (Squad 4), y nombres de los estados de solicitud.
+- Exportación en CSV; PDF se agrega creando `ExportadorPdf`.
+- La "actividad reciente" del mockup requiere un registro de eventos que hoy no existe en ningún dominio.
+
+
+## Documentación de la API (Swagger)
+Con el servicio en ejecución:
+- Swagger UI: `http://localhost:8083/swagger-ui.html`
+- OpenAPI (JSON): `http://localhost:8083/v3/api-docs`
+
+Para probar desde Swagger UI, se pulsa **Authorize** y se pega un JWT.
+La colección de Postman del servicio (`postman/`) genera tokens de prueba para cada rol y se ejecuta sola con `bash postman/ejecutar-coleccion.sh` (ver `postman/README.md`).
+La documentación es pública y se puede apagar con `SWAGGER_ENABLED=false`.
