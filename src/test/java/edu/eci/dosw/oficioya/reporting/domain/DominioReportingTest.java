@@ -29,7 +29,7 @@ class DominioReportingTest {
 
     private static DatosPlataforma datos(long cumplidos, long cancelados, long reportadas, double calificacion) {
         return new DatosPlataforma(SEMANA,
-                Map.of("CUMPLIDA", cumplidos, "CANCELADA", cancelados, "EN_CURSO", 10L),
+                Map.of("CUMPLIDA", cumplidos, "CANCELADA", cancelados, "ACEPTADA", 10L),
                 List.of(new PuntoEstadistico("2026-10-04", 142), new PuntoEstadistico("2026-10-05", 168)),
                 List.of(new PuntoEstadistico("Plomería", 40)),
                 400, 12, 6,
@@ -87,7 +87,7 @@ class DominioReportingTest {
         DatosPlataforma d = datos(100, 5, 7, 4.5);
         assertThat(d.estadistica(TipoEstadistica.SERVICIOS_CUMPLIDOS_POR_OFICIO).total()).isEqualTo(40);
         assertThat(d.estadistica(TipoEstadistica.SOLICITUDES_POR_ESTADO).puntos())
-                .extracting(PuntoEstadistico::etiqueta).containsExactly("EN_CURSO", "CUMPLIDA", "CANCELADA");
+                .extracting(PuntoEstadistico::etiqueta).containsExactly("ACEPTADA", "CUMPLIDA", "CANCELADA");
         assertThat(d.estadistica(TipoEstadistica.TRABAJADORES_POR_OFICIO).total()).isEqualTo(120);
         assertThat(d.estadistica(TipoEstadistica.REPORTES_DE_RESENAS_POR_ESTADO).puntos())
                 .containsExactly(new PuntoEstadistico("Pendientes", 5), new PuntoEstadistico("Resueltos", 2));
@@ -132,7 +132,8 @@ class DominioReportingTest {
                     new PuntoEstadistico("Carpintería", 90)),
             List.of(new PuntoEstadistico("Suba", 40), new PuntoEstadistico("Chapinero", 75)),
             62_450.4,
-            List.of(new PuntoEstadistico("Plomería", 85_000), new PuntoEstadistico("Carpintería", 95_000)));
+            List.of(new PuntoEstadistico("Plomería", 85_000), new PuntoEstadistico("Carpintería", 95_000)),
+            List.of(new PuntoEstadistico("Noche", 20), new PuntoEstadistico("Mañana", 60)));
 
     @Test
     void elFlujoDeTrabajoSigueLasEtapasDeLaSolicitud() {
@@ -152,6 +153,8 @@ class DominioReportingTest {
                 .containsExactly("Plomería", "Carpintería", "Electricidad");
         assertThat(d.estadistica(TipoEstadistica.SOLICITUDES_POR_ZONA).puntos()).extracting(PuntoEstadistico::etiqueta)
                 .containsExactly("Chapinero", "Suba");
+        assertThat(d.estadistica(TipoEstadistica.SOLICITUDES_POR_FRANJA).puntos()).extracting(PuntoEstadistico::etiqueta)
+                .containsExactly("Mañana", "Noche");
         assertThat(d.estadistica(TipoEstadistica.TARIFA_PROMEDIO_POR_OFICIO).maximo())
                 .contains(new PuntoEstadistico("Carpintería", 95_000));
         assertThat(DEMANDA.promedioUsuariosActivos()).isEqualTo(620.5);
@@ -161,7 +164,7 @@ class DominioReportingTest {
     void calculadoresDeCuentasDemandaYTarifas() {
         DatosPlataforma actual = conDemanda(DEMANDA);
         DatosPlataforma anterior = conDemanda(new DatosDemanda(1400, 250,
-                List.of(new PuntoEstadistico("2026-09-27", 500)), List.of(), List.of(), 60_000, List.of()));
+                List.of(new PuntoEstadistico("2026-09-27", 500)), List.of(), List.of(), 60_000, List.of(), List.of()));
 
         Indicador activas = new CalculadorCuentasActivas().calcular(actual, anterior);
         assertThat(activas.valor()).isEqualTo(1480);

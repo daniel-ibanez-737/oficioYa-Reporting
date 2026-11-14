@@ -12,6 +12,7 @@ import java.util.Map;
  * @param solicitudesPorZona      solicitudes creadas en el periodo por zona (barrio o localidad)
  * @param tarifaPromedio          tarifa promedio (COP) de las solicitudes del periodo
  * @param tarifaPromedioPorOficio tarifa promedio (COP) de las solicitudes del periodo por oficio
+ * @param solicitudesPorFranja    solicitudes del periodo por franja de 6 horas (RF-02)
  */
 public record EstadisticasServiciosDTO(
         Map<String, Long> solicitudesPorEstado,
@@ -20,11 +21,21 @@ public record EstadisticasServiciosDTO(
         List<ConteoDTO> solicitudesPorOficio,
         List<ConteoDTO> solicitudesPorZona,
         Double tarifaPromedio,
-        List<ConteoDTO> tarifaPromedioPorOficio) {
+        List<ConteoDTO> tarifaPromedioPorOficio,
+        List<ConteoDTO> solicitudesPorFranja) {
+
+    /** Respuesta sin las franjas horarias. */
+    public EstadisticasServiciosDTO(Map<String, Long> solicitudesPorEstado, List<ConteoDTO> cumplidosPorDia,
+                                    List<ConteoDTO> cumplidosPorOficio, List<ConteoDTO> solicitudesPorOficio,
+                                    List<ConteoDTO> solicitudesPorZona, Double tarifaPromedio,
+                                    List<ConteoDTO> tarifaPromedioPorOficio) {
+        this(solicitudesPorEstado, cumplidosPorDia, cumplidosPorOficio, solicitudesPorOficio, solicitudesPorZona,
+                tarifaPromedio, tarifaPromedioPorOficio, null);
+    }
 
     /** Respuesta sin los datos de demanda ni de tarifas (versión anterior del contrato). */
     public EstadisticasServiciosDTO(Map<String, Long> solicitudesPorEstado, List<ConteoDTO> cumplidosPorDia,
                                     List<ConteoDTO> cumplidosPorOficio) {
-        this(solicitudesPorEstado, cumplidosPorDia, cumplidosPorOficio, null, null, null, null);
+        this(solicitudesPorEstado, cumplidosPorDia, cumplidosPorOficio, null, null, null, null, null);
     }
 }

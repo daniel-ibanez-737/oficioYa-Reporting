@@ -42,11 +42,11 @@ docker run --rm -v "$PWD":/app -w /app maven:3.9-eclipse-temurin-21 mvn verify
 ## Variables de entorno
 | Variable | Uso | Valor por defecto (desarrollo) |
 |---|---|---|
-| `JWT_SECRET` | Secreto para validar el JWT | valor de desarrollo |
+| `JWT_SECRET` | Secreto compartido con Identity, en Base64 (igual que Identity) | valor de desarrollo |
 | `JWT_ROLES_CLAIM` | Claim del JWT con los roles | `roles` |
 | `ORQUESTADOR_URL` | URL del Orchestrator | `http://localhost:8080` |
 
-## Endpoints (solo `ROLE_ADMINISTRADOR`)
+## Endpoints (solo rol `ADMIN`)
 | Método | Ruta | Descripción |
 |---|---|---|
 | GET | `/api/v1/reporting/reportes` | Catálogo de reportes disponibles. |
@@ -74,9 +74,14 @@ a través del Orchestrator.
 
 | Dominio | Ruta (configurable en `oficioya.orquestador.rutas`) |
 |---|---|
-| Service | `/api/service/solicitudes/estadisticas` |
+| Service | `GET /api/v1/services/reports?from=&to=` (total, por estado, por barrio y por hora; las horas se agrupan en franjas de 6 horas) |
 | Worker | `/api/workers/trabajadores/estadisticas` |
 | Reputation | `/api/v1/reputation/estadisticas` (ya implementado por el Squad 5) |
+
+## Formato del JWT (acordado con Identity, Squad 1)
+- Firma HS256 con el secreto decodificado de Base64.
+- `sub`: id (UUID) del usuario.
+- `roles`: lista sin prefijo (`CONTRATANTE`, `TRABAJADOR`, `ADMIN`, `SISTEMA`).
 
 ## Perfil `demo`
 Para probar sin los otros dominios, con cifras parecidas a las del mockup:
@@ -86,8 +91,10 @@ mvn spring-boot:run -Dspring-boot.run.profiles=demo
 ```
 
 ## Supuestos pendientes de confirmar
-- Formato de las estadísticas de Service (Squad 3) y Worker (Squad 4), y nombres de los estados de solicitud.
-- Service debe agregar `solicitudesPorOficio`, `solicitudesPorZona`, `tarifaPromedio` y `tarifaPromedioPorOficio`.
+- Service (Squad 4) ya entrega el reporte real; falta que agregue cumplidos por día y por oficio, solicitudes por
+  oficio y tarifas (RF-03 y RF-05). Los estados se traducen al español (Pendiente, Aceptada, Conflicto, Cumplida,
+  Rechazada, Cancelada, Expirada, Eliminada).
+- Formato de las estadísticas de Worker (Squad 3).
 - Identity / Usuarios debe exponer cuentas activas, inactivas y usuarios activos por día
   (`oficioya.orquestador.rutas.estadisticas-usuarios`, por defecto `/api/users/usuarios/estadisticas`).
 - Exportación en CSV; PDF se agrega creando `ExportadorPdf`.

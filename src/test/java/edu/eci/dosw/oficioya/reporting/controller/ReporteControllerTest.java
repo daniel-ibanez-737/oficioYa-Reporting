@@ -32,7 +32,7 @@ class ReporteControllerTest {
     void siUnDominioNoRespondeSeDevuelve502() throws Exception {
         when(servicio.periodo(any(), any())).thenThrow(new IntegracionException("caído", new RuntimeException()));
         mvc.perform(get("/api/v1/reporting/indicadores")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR"))))
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isBadGateway());
     }
 }
