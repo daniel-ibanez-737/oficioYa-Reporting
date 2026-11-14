@@ -19,6 +19,7 @@ import edu.eci.dosw.oficioya.reporting.domain.Reporte;
 import edu.eci.dosw.oficioya.reporting.domain.TipoEstadistica;
 import edu.eci.dosw.oficioya.reporting.domain.TipoIndicador;
 import edu.eci.dosw.oficioya.reporting.domain.TipoReporte;
+import edu.eci.dosw.oficioya.reporting.dto.ArchivoExportado;
 import edu.eci.dosw.oficioya.reporting.exception.SolicitudInvalidaException;
 
 class ExportacionTest {
@@ -75,5 +76,16 @@ class ExportacionTest {
         ExportadorFactory sinExportadores = new ExportadorFactory(List.of());
         assertThatThrownBy(() -> sinExportadores.obtener(FormatoExportacion.CSV))
                 .isInstanceOf(SolicitudInvalidaException.class);
+    }
+
+    @Test
+    void dosArchivosConLosMismosBytesSonIguales() {
+        ArchivoExportado a = new ArchivoExportado("r.csv", "text/csv", new byte[] {1, 2, 3});
+        ArchivoExportado b = new ArchivoExportado("r.csv", "text/csv", new byte[] {1, 2, 3});
+        ArchivoExportado distinto = new ArchivoExportado("r.csv", "text/csv", new byte[] {9});
+
+        assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(distinto).isNotEqualTo("r.csv");
+        assertThat(a.toString()).contains("r.csv", "bytes=3");
+        assertThat(new ArchivoExportado("v.csv", "text/csv", null).toString()).contains("bytes=0");
     }
 }
