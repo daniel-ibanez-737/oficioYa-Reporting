@@ -22,7 +22,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("OficioYa · Reporting")
-                        .version("sprint-3")
+                        .version("sprint-5")
                         .description("Reportes, indicadores, estadísticas y exportación para el administrador. Microservicio del Squad 5 (puerto 8083). "
                                 + "En producción se accede a través del Orchestrator."))
                 .components(new Components().addSecuritySchemes(ESQUEMA_JWT, new SecurityScheme()
