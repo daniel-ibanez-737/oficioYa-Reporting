@@ -1,5 +1,7 @@
 package edu.eci.dosw.oficioya.reporting.client;
 
+import java.time.LocalTime;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import edu.eci.dosw.oficioya.reporting.dto.EstadisticasReputacionDTO;
 import edu.eci.dosw.oficioya.reporting.dto.EstadisticasServiciosDTO;
 import edu.eci.dosw.oficioya.reporting.dto.EstadisticasTrabajadoresDTO;
 import edu.eci.dosw.oficioya.reporting.dto.EstadisticasUsuariosDTO;
+import edu.eci.dosw.oficioya.reporting.dto.ReporteServiceDTO;
 import edu.eci.dosw.oficioya.reporting.exception.IntegracionException;
 
 /**
@@ -42,7 +45,22 @@ public class OrquestadorRestClient implements OrquestadorClient {
 
     @Override
     public EstadisticasServiciosDTO estadisticasServicios(PeriodoConsulta periodo) {
-        return consultar(rutaServicios, periodo, EstadisticasServiciosDTO.class, "Service");
+        // Formato real de Service: from/to con fecha y hora; se traduce con ReporteServiceDTO.
+        try {
+            ReporteServiceDTO reporte = restClient.get()
+                    .uri(uri -> uri.path(rutaServicios)
+                            .queryParam("from", periodo.desde().atStartOfDay())
+                            .queryParam("to", periodo.hasta().atTime(LocalTime.MAX.withNano(0)))
+                            .build())
+                    .retrieve()
+                    .body(ReporteServiceDTO.class);
+            if (reporte == null) {
+                throw new IntegracionException("Service no devolvió datos", null);
+            }
+            return reporte.aEstadisticas();
+        } catch (RestClientException e) {
+            throw new IntegracionException("No fue posible consultar los datos de Service", e);
+        }
     }
 
     @Override

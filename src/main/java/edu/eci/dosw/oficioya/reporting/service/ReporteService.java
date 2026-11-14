@@ -143,7 +143,7 @@ public class ReporteService {
                         porDia(periodo, usuarios.activosPorDia()),
                         puntos(servicios.solicitudesPorOficio()), puntos(servicios.solicitudesPorZona()),
                         servicios.tarifaPromedio() == null ? 0 : servicios.tarifaPromedio(),
-                        puntos(servicios.tarifaPromedioPorOficio())));
+                        puntos(servicios.tarifaPromedioPorOficio()), puntos(servicios.solicitudesPorFranja())));
     }
 
     /** Un punto por cada día del periodo; los días sin datos quedan en 0 para que la gráfica no tenga huecos. */

@@ -20,6 +20,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
 import edu.eci.dosw.oficioya.reporting.domain.PeriodoConsulta;
+import edu.eci.dosw.oficioya.reporting.dto.ConteoDTO;
 import edu.eci.dosw.oficioya.reporting.dto.EstadisticasServiciosDTO;
 import edu.eci.dosw.oficioya.reporting.dto.EstadisticasTrabajadoresDTO;
 import edu.eci.dosw.oficioya.reporting.exception.IntegracionException;
@@ -30,6 +31,7 @@ class OrquestadorClientTest {
     private static final PeriodoConsulta SEMANA =
             new PeriodoConsulta(LocalDate.of(2026, 10, 4), LocalDate.of(2026, 10, 10));
     private static final String CONSULTA = "?desde=2026-10-04&hasta=2026-10-10";
+    private static final String CONSULTA_SERVICE = "?from=2026-10-04T00:00&to=2026-10-10T23:59:59";
 
     private MockRestServiceServer servidor;
     private OrquestadorRestClient cliente;
@@ -38,7 +40,7 @@ class OrquestadorClientTest {
     void preparar() {
         RestClient.Builder builder = RestClient.builder();
         servidor = MockRestServiceServer.bindTo(builder).build();
-        cliente = new OrquestadorRestClient(builder, BASE, "/api/service/solicitudes/estadisticas",
+        cliente = new OrquestadorRestClient(builder, BASE, "/api/v1/services/reports",
                 "/api/workers/trabajadores/estadisticas", "/api/v1/reputation/estadisticas",
                 "/api/users/usuarios/estadisticas");
     }
@@ -53,12 +55,12 @@ class OrquestadorClientTest {
         Jwt jwt = Jwt.withTokenValue("token-admin").header("alg", "HS256").subject("admin-1").build();
         SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
 
-        servidor.expect(requestTo(BASE + "/api/service/solicitudes/estadisticas" + CONSULTA))
+        servidor.expect(requestTo(BASE + "/api/v1/services/reports" + CONSULTA_SERVICE))
                 .andExpect(header("Authorization", "Bearer token-admin"))
                 .andRespond(withSuccess("""
-                        {"solicitudesPorEstado": {"CUMPLIDA": 1248},
-                         "cumplidosPorDia": [{"etiqueta": "2026-10-04", "cantidad": 142}],
-                         "cumplidosPorOficio": []}""", MediaType.APPLICATION_JSON));
+                        {"total": 1300, "byStatus": {"COMPLETED": 1248, "PENDING": 52},
+                         "byNeighborhood": {"Chapinero": 700}, "byHour": {"9": 1000, "19": 300}}""",
+                        MediaType.APPLICATION_JSON));
         servidor.expect(requestTo(BASE + "/api/workers/trabajadores/estadisticas"))
                 .andRespond(withSuccess("{\"activos\": 400, \"pausadosVoluntarios\": 12, \"pausadosPorReputacion\": 6}",
                         MediaType.APPLICATION_JSON));
@@ -75,8 +77,9 @@ class OrquestadorClientTest {
         EstadisticasServiciosDTO servicios = cliente.estadisticasServicios(SEMANA);
         EstadisticasTrabajadoresDTO trabajadores = cliente.estadisticasTrabajadores();
 
-        assertThat(servicios.solicitudesPorEstado()).containsEntry("CUMPLIDA", 1248L);
-        assertThat(servicios.cumplidosPorDia().get(0).cantidad()).isEqualTo(142);
+        assertThat(servicios.solicitudesPorEstado()).containsEntry("CUMPLIDA", 1248L).containsEntry("PENDIENTE", 52L);
+        assertThat(servicios.solicitudesPorZona()).containsExactly(new ConteoDTO("Chapinero", 700));
+        assertThat(servicios.solicitudesPorFranja()).extracting(ConteoDTO::cantidad).containsExactly(0L, 1000L, 0L, 300L);
         assertThat(trabajadores.pausadosVoluntarios()).isEqualTo(12);
         assertThat(cliente.estadisticasReputacion(SEMANA).reportesPendientes()).isEqualTo(5);
         assertThat(cliente.estadisticasUsuarios(SEMANA).cuentasInactivas()).isEqualTo(236);
@@ -85,7 +88,7 @@ class OrquestadorClientTest {
 
     @Test
     void erroresORespuestasVaciasSonFallasDeIntegracion() {
-        servidor.expect(requestTo(BASE + "/api/service/solicitudes/estadisticas" + CONSULTA)).andRespond(withServerError());
+        servidor.expect(requestTo(BASE + "/api/v1/services/reports" + CONSULTA_SERVICE)).andRespond(withServerError());
         servidor.expect(requestTo(BASE + "/api/workers/trabajadores/estadisticas")).andRespond(withSuccess());
         assertThatThrownBy(() -> cliente.estadisticasServicios(SEMANA)).isInstanceOf(IntegracionException.class);
         assertThatThrownBy(() -> cliente.estadisticasTrabajadores())

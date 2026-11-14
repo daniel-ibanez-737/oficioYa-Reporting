@@ -13,6 +13,8 @@ public enum TipoEstadistica {
     USUARIOS_ACTIVOS_POR_DIA("Usuarios activos por día", "Usuarios que usaron la plataforma cada día del periodo"),
     SOLICITUDES_POR_OFICIO("Categorías más apetecidas", "Solicitudes creadas en el periodo por oficio"),
     SOLICITUDES_POR_ZONA("Zonas más concurridas", "Solicitudes creadas en el periodo por zona"),
+    SOLICITUDES_POR_FRANJA("Franjas horarias con más solicitudes",
+            "Solicitudes del periodo por franja de 6 horas, de mayor a menor"),
     TARIFA_PROMEDIO_POR_OFICIO("Tarifa promedio por oficio", "Tarifa promedio (COP) de las solicitudes del periodo");
 
     private final String nombre;

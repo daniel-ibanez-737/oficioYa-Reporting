@@ -29,8 +29,9 @@ public record DatosPlataforma(
     public static final String ESTADO_CANCELADA = "CANCELADA";
 
     /** Orden del flujo de trabajo de una solicitud; los estados que no estén aquí van al final. */
-    static final List<String> FLUJO_DE_TRABAJO = List.of("PENDIENTE", "ACEPTADA", "EN_CURSO", ESTADO_CUMPLIDA,
-            ESTADO_CANCELADA);
+    // Estados de Service (Squad 4), ya en español: Pendiente, Aceptada, Conflicto, Cumplida y los finales.
+    static final List<String> FLUJO_DE_TRABAJO = List.of("PENDIENTE", "ACEPTADA", "CONFLICTO", ESTADO_CUMPLIDA,
+            "RECHAZADA", ESTADO_CANCELADA, "EXPIRADA", "ELIMINADA");
 
     private static final Comparator<Map.Entry<String, Long>> POR_FLUJO = Comparator
             .<Map.Entry<String, Long>>comparingInt(e -> FLUJO_DE_TRABAJO.contains(e.getKey())
@@ -91,6 +92,7 @@ public record DatosPlataforma(
             case USUARIOS_ACTIVOS_POR_DIA -> demanda.usuariosActivosPorDia();
             case SOLICITUDES_POR_OFICIO -> demanda.solicitudesPorOficio();
             case SOLICITUDES_POR_ZONA -> demanda.solicitudesPorZona();
+            case SOLICITUDES_POR_FRANJA -> demanda.solicitudesPorFranja();
             case TARIFA_PROMEDIO_POR_OFICIO -> demanda.tarifaPromedioPorOficio();
         };
         return new Estadistica(tipo, puntos);

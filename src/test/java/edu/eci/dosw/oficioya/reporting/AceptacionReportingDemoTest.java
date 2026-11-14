@@ -34,7 +34,7 @@ class AceptacionReportingDemoTest {
     private MockMvc mvc;
 
     private static RequestPostProcessor administrador() {
-        return jwt().jwt(j -> j.subject("admin-1")).authorities(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR"));
+        return jwt().jwt(j -> j.subject("admin-1")).authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
     @Test
@@ -66,7 +66,7 @@ class AceptacionReportingDemoTest {
         mvc.perform(get(BASE + "/estadisticas").param("desde", "2026-10-01").param("hasta", "2026-10-31")
                         .with(administrador()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(10))
+                .andExpect(jsonPath("$.length()").value(11))
                 .andExpect(jsonPath("$[0].puntos.length()").value(31));
     }
 

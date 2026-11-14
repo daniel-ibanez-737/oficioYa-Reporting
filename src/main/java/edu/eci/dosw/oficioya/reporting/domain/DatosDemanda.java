@@ -15,19 +15,21 @@ public record DatosDemanda(
         List<PuntoEstadistico> solicitudesPorOficio,
         List<PuntoEstadistico> solicitudesPorZona,
         double tarifaPromedio,
-        List<PuntoEstadistico> tarifaPromedioPorOficio) {
+        List<PuntoEstadistico> tarifaPromedioPorOficio,
+        List<PuntoEstadistico> solicitudesPorFranja) {
 
     private static final Comparator<PuntoEstadistico> DE_MAYOR_A_MENOR =
             Comparator.comparingDouble(PuntoEstadistico::valor).reversed().thenComparing(PuntoEstadistico::etiqueta);
 
     // debe ir después del comparador: el constructor lo usa
-    public static final DatosDemanda VACIOS = new DatosDemanda(0, 0, List.of(), List.of(), List.of(), 0, List.of());
+    public static final DatosDemanda VACIOS = new DatosDemanda(0, 0, List.of(), List.of(), List.of(), 0, List.of(), List.of());
 
     public DatosDemanda {
         usuariosActivosPorDia = List.copyOf(usuariosActivosPorDia);
         solicitudesPorOficio = solicitudesPorOficio.stream().sorted(DE_MAYOR_A_MENOR).toList();
         solicitudesPorZona = solicitudesPorZona.stream().sorted(DE_MAYOR_A_MENOR).toList();
         tarifaPromedioPorOficio = tarifaPromedioPorOficio.stream().sorted(DE_MAYOR_A_MENOR).toList();
+        solicitudesPorFranja = solicitudesPorFranja.stream().sorted(DE_MAYOR_A_MENOR).toList();
     }
 
     /** Promedio diario de usuarios activos en el periodo, con un decimal; 0 si no hay datos. */

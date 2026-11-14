@@ -1,6 +1,6 @@
 package edu.eci.dosw.oficioya.reporting.config;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -18,10 +18,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Seguridad del microservicio: toda petición debe traer un JWT válido emitido por Identity
- * y reenviado por el Orchestrator. Los roles se leen del claim configurado
- * (por defecto "roles", con valores ROLE_CONTRATANTE, ROLE_TRABAJADOR o ROLE_ADMINISTRADOR).
- *
- * PENDIENTE de confirmar con Identity (Squad 1): algoritmo, secreto y nombre del claim de roles.
+ * y reenviado por el Orchestrator. Mismo formato que Identity (Squad 1) y los demás dominios:
+ * HS256 con el secreto JWT_SECRET en Base64, el sub es el UUID del usuario y los roles vienen en el claim
+ * "roles" sin prefijo (CONTRATANTE, TRABAJADOR, ADMIN; SISTEMA para los avisos entre dominios).
  */
 @Configuration
 public class SecurityConfig {
@@ -36,7 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Documentación de la API (Swagger): pública; se apaga con SWAGGER_ENABLED=false.
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
         return http.build();
@@ -44,7 +43,8 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(@Value("${oficioya.security.jwt-secret}") String secret) {
-        SecretKeySpec key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        // Igual que Identity: el secreto se usa decodificado de Base64.
+        SecretKeySpec key = new SecretKeySpec(Base64.getDecoder().decode(secret.trim()), "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
@@ -53,7 +53,8 @@ public class SecurityConfig {
             @Value("${oficioya.security.roles-claim}") String rolesClaim) {
         JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
         authorities.setAuthoritiesClaimName(rolesClaim);
-        authorities.setAuthorityPrefix("");
+        // Los roles llegan sin prefijo (por ejemplo "ADMIN"); Spring Security los usa como ROLE_ADMIN.
+        authorities.setAuthorityPrefix("ROLE_");
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(authorities);
         return converter;
